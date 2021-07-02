@@ -1,63 +1,53 @@
-window.onload = function() {
-    getHeight();
-    addNavClickEvent();
-}
+let curAnchor = location.hash; // 当前页面锚点位置，初始为首页""
+let curAnchorIndex = 0;
+let navAnchorList = [];
 
-window.onresize = function() {
-    getHeight();
+window.onload = function() {
+    getAnchorList();
+    addNavClickEvent();
 }
 
 /*
 * 页面滚动行为
 * */
 {
-    // 当前文档在垂直方向已滚动的像素值，初始化为0
-    let currentY = 0;
-    // 取得所有板块的节点（不包含 footer 页脚）
-    let scrollItems = document.getElementsByTagName('section');
-    let scrollComputedStyle;
-    let curHeight;
+    let navList = document.getElementsByClassName('navMenuItem');
     let scrollTimeout;
 
-    window.addEventListener('wheel', scrollThrottler);
+    window.addEventListener('wheel', function (e) {
+        // 禁止默认滚动事件，避免页面滑动过程中出现停滞现象
+        e.preventDefault();
+        scrollThrottler(e);
+    },{ passive: false });
 
-    function getHeight() {
-        scrollComputedStyle = window.getComputedStyle(scrollItems[0], null);
-        curHeight = Number(scrollComputedStyle['minHeight'].slice(0,-2));
+    function getAnchorList() {
+        for (let i = 0; i < navList.length; i++) {
+            navAnchorList[i] = navList[i].children[0].hash;
+        }
+        console.log(navAnchorList);
     }
 
     function scrollThrottler(e) {
         if (!scrollTimeout) {
             scrollHandler(e);
-            /*
-            * 触发滚动事件后为 scrollTimeout 赋值，并在0.8秒后重置为 null
-            * setTimeout 期间若 scrollTimeout != null（等效于队列中 scrollHandler 正在执行）
-            * 则不会执行 if 判断内的语句，从而实现节流
-            * */
             scrollTimeout = setTimeout(function () {
                 scrollTimeout = null;
-            }, 800);
+            }, 800)
         }
     }
 
     function scrollHandler(e) {
         // 页面下滑
-        if (e.deltaY > 0) {
-            window.scrollBy({
-                top: curHeight,
-                left: 0,
-                behavior: 'smooth'
-            });
-            console.log('scroll down');
+        if (e.deltaY > 0 && curAnchorIndex >= 0 && curAnchorIndex < navAnchorList.length - 1) {
+            curAnchorIndex++;
+            location.hash = navAnchorList[curAnchorIndex];
+            // console.log('scroll down' + '\ncurrent index:' + curAnchorIndex);
         }
         // 页面上滑
-        else if (e.deltaY < 0) {
-            window.scrollBy({
-                top: -curHeight,
-                left: 0,
-                behavior: 'smooth'
-            });
-            console.log('scroll up');
+        else if (e.deltaY < 0 && curAnchorIndex > 0 && curAnchorIndex <= navAnchorList.length - 1) {
+            curAnchorIndex--;
+            location.hash = navAnchorList[curAnchorIndex];
+            // console.log('scroll up' + '\ncurrent index:' + curAnchorIndex);
         }
     }
 }
@@ -66,9 +56,10 @@ window.onresize = function() {
 * 导航栏行为
 * */
 {
-    let navMenuItems = document.getElementsByClassName('navMenuItem');
+    let navMenuItems;
 
     function addNavClickEvent() {
+        navMenuItems = document.getElementsByClassName('navMenuItem');
         for (let i = 0; i < navMenuItems.length; i++) {
             navMenuItems[i].addEventListener('click', addNavActiveClass);
         }
@@ -77,6 +68,12 @@ window.onresize = function() {
 
     function addNavActiveClass() {
         document.querySelector('.navMenuItem.active').classList.remove('active');
-        this.classList.add('active');
+        navMenuItems = document.getElementsByClassName('navMenuItem');
+        let activeMenuItem = this;
+        activeMenuItem.classList.add('active');
+        // 获取当前页面锚点索引
+        for (let i = 0; i < navMenuItems.length; i++) {
+            if (navMenuItems[i] === activeMenuItem ) return curAnchorIndex = i;
+        }
     }
 }
