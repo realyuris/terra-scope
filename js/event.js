@@ -1,6 +1,7 @@
 let curAnchor = location.hash; // 当前页面锚点位置，初始为首页""
 let curAnchorIndex = 0;
 let navAnchorList = [];
+let curSection;
 
 window.onload = function() {
     getAnchorList();
@@ -40,12 +41,16 @@ window.onload = function() {
         // 页面下滑
         if (e.deltaY > 0 && curAnchorIndex >= 0 && curAnchorIndex < navAnchorList.length - 1) {
             curAnchorIndex++;
+            document.querySelector('.navMenuItem.active').classList.remove('active');
+            document.getElementsByClassName('navMenuItem')[curAnchorIndex].classList.add('active');
             location.hash = navAnchorList[curAnchorIndex];
             // console.log('scroll down' + '\ncurrent index:' + curAnchorIndex);
         }
         // 页面上滑
         else if (e.deltaY < 0 && curAnchorIndex > 0 && curAnchorIndex <= navAnchorList.length - 1) {
             curAnchorIndex--;
+            document.querySelector('.navMenuItem.active').classList.remove('active');
+            document.getElementsByClassName('navMenuItem')[curAnchorIndex].classList.add('active');
             location.hash = navAnchorList[curAnchorIndex];
             // console.log('scroll up' + '\ncurrent index:' + curAnchorIndex);
         }
